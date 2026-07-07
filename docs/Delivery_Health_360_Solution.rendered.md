@@ -97,7 +97,7 @@ Comms / Scorecards   Persona Summaries      Escalations
 
 ## 4. Architecture Overview
 
-<div class="mermaid-diagram"><img src="diagrams/diagram-01.svg" alt="Diagram 1" /></div>
+<div class="mermaid-diagram"><img src="../diagrams/diagram-01.svg" alt="Diagram 1" /></div>
 
 **Key architectural principles:**
 
@@ -642,7 +642,7 @@ Build a continuously updated **simulation model** of Relevantz's delivery organi
 - **Simulated forward** — "If we add 2 engineers to Team Phoenix, what does the twin predict for the next release?"
 - **A/B compared** — twin state under Plan A vs. Plan B
 
-<div class="mermaid-diagram"><img src="diagrams/diagram-02.svg" alt="Diagram 2" /></div>
+<div class="mermaid-diagram"><img src="../diagrams/diagram-02.svg" alt="Diagram 2" /></div>
 
 ### 19.3 Knowledge Graph (not a hierarchy)
 
@@ -956,7 +956,7 @@ secrets_and_privacy:
 
 Treat signals as a stream processed by a three-tier reactive control system modeled on biological reflex arcs:
 
-<div class="mermaid-diagram"><img src="diagrams/diagram-03.svg" alt="Diagram 3" /></div>
+<div class="mermaid-diagram"><img src="../diagrams/diagram-03.svg" alt="Diagram 3" /></div>
 
 - **Tier 1 — Spinal reflexes.** Simple stream rules. Latency: seconds.
 - **Tier 2 — Autonomic actions.** Bounded, reversible, rate-limited, audited. Latency: minutes.
@@ -1080,7 +1080,7 @@ Approving the PR **is** the action. The nervous system re-reads the new contract
 
 ### 20.8 Architecture (V3)
 
-<div class="mermaid-diagram"><img src="diagrams/diagram-04.svg" alt="Diagram 4" /></div>
+<div class="mermaid-diagram"><img src="../diagrams/diagram-04.svg" alt="Diagram 4" /></div>
 
 ### 20.9 Tech Stack (V3)
 
