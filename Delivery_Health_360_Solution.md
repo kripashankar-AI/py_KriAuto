@@ -5,10 +5,17 @@
 **Document Type:** Solution Design + Figma Prototype Spec
 **Date:** 2026-07-07
 
+> This document presents **three distinct solution paradigms** for the DE4 challenge:
+> - **Solution V1 — Command Center + Playbooks** (Sections 1–18) — pragmatic, dashboard-plus-orchestration
+> - **Solution V2 — Delivery Digital Twin + Multi-Agent Copilot** (Section 19) — conversational, simulation-first
+> - **Solution V3 — FlowOps: Delivery-as-Code + Reactive Nervous System + Prediction Markets** (Section 20) — GitOps-native, autonomous within a policy envelope
+> - **Comparison & Recommendation** (Section 21)
+
 ---
 
 ## Table of Contents
 
+### Solution V1 — Command Center + Playbooks
 1. [Executive Summary](#1-executive-summary)
 2. [Problem Recap](#2-problem-recap)
 3. [Solution Vision — Signal → Insight → Action](#3-solution-vision--signal--insight--action)
@@ -27,6 +34,15 @@
 16. [Success Measures / KPIs](#16-success-measures--kpis)
 17. [Figma Prototype Spec](#17-figma-prototype-spec)
 18. [Appendix — Sample Data & Formulas](#18-appendix--sample-data--formulas)
+
+### Solution V2 — Digital Twin + Multi-Agent Copilot
+19. [DeliveryOS — Digital Twin + Multi-Agent Copilot](#19-solution-v2--deliveryos-digital-twin--multi-agent-copilot)
+
+### Solution V3 — FlowOps
+20. [FlowOps — Delivery-as-Code + Reactive Nervous System + Prediction Markets](#20-solution-v3--flowops-delivery-as-code--reactive-nervous-system--prediction-markets)
+
+### Comparison
+21. [Comparison & Recommendation](#21-comparison--recommendation)
 
 ---
 
@@ -640,6 +656,707 @@ Lead Time for Changes = median(deploy_time - first_commit_time)  (DORA)
 | Action playbook feed | ○ | ○ | ● | ● | ● | ● | ● | ● | ○ | ○ |
 
 ● = primary · ○ = secondary
+
+---
+
+## 19. Solution V2 — DeliveryOS: Digital Twin + Multi-Agent Copilot
+
+A deliberately different paradigm from V1. Where V1 is a **dashboard + playbook** platform, V2 is a **living simulation of the delivery org** that autonomous AI agents interrogate, negotiate with, and act on — through conversation, not screens.
+
+### 19.1 Paradigm Shift
+
+| Dimension | V1 (Command Center) | V2 (DeliveryOS) |
+|---|---|---|
+| **Primary UX** | Persona workspaces with charts | Conversational Copilot — chat-first, screens on demand |
+| **Data model** | Relational hierarchy | **Knowledge graph** — relationships are first-class |
+| **Intelligence** | Metric scores + ML risk models | **Multi-agent system** — specialized AI agents that reason and negotiate |
+| **Action** | Human-picked playbooks | **Agentic execution** with human-in-the-loop approval gates |
+| **Metaphor** | Command Center / Cockpit | **Digital Twin** — a simulated mirror of the delivery organization |
+| **Data flow** | Batch + streaming ETL | **Event-sourced** with time-travel replay |
+| **Governance** | Centralized platform team | **Data mesh** — each engagement owns its "delivery data product" |
+
+### 19.2 The Digital Twin Concept
+
+Build a continuously updated **simulation model** of Relevantz's delivery organization. Every engagement, team, sprint, engineer, PR, and dependency is a node in a graph. State changes are events. The twin can be:
+
+- **Queried** — "What is the state of Globex right now?"
+- **Rewound** — "What did the twin look like 3 sprints ago when we last shipped on time?"
+- **Simulated forward** — "If we add 2 engineers to Team Phoenix, what does the twin predict for the next release?"
+- **A/B compared** — twin state under Plan A vs. Plan B
+
+```mermaid
+flowchart TB
+    subgraph Reality["Reality (Source Systems)"]
+        R1[JIRA/ADO Events]
+        R2[Git/PR Events]
+        R3[CI/CD Events]
+        R4[Comms Events]
+    end
+
+    subgraph EventBus["Event Sourcing Bus (Kafka + EventStore)"]
+        E[Immutable Event Log]
+    end
+
+    subgraph Twin["Delivery Digital Twin"]
+        KG[(Knowledge Graph<br/>Neo4j)]
+        SM[State Materializer]
+        SIM[Simulation Engine<br/>Monte Carlo + Agent-Based]
+    end
+
+    subgraph Agents["Multi-Agent Layer"]
+        A1[Scout Agent<br/>Anomaly hunt]
+        A2[Historian Agent<br/>Pattern recall]
+        A3[Forecaster Agent<br/>What-if]
+        A4[Negotiator Agent<br/>Trade-off]
+        A5[Coach Agent<br/>Persona guide]
+        ORC[Orchestrator]
+    end
+
+    subgraph UX["Human Interfaces"]
+        CHAT[Copilot Chat]
+        VOICE[Voice Briefing]
+        AMBIENT[Ambient Notifications<br/>Teams/Slack/Email]
+        CANVAS[On-demand Canvas<br/>generated views]
+    end
+
+    Reality --> EventBus
+    EventBus --> SM
+    SM --> KG
+    KG --> SIM
+    KG --> Agents
+    SIM --> Agents
+    ORC <--> A1 & A2 & A3 & A4 & A5
+    Agents --> UX
+    UX -->|approved actions| Reality
+```
+
+### 19.3 Knowledge Graph (not a hierarchy)
+
+Model delivery as a graph where **relationships are queryable**:
+
+```
+(Engineer)-[:CONTRIBUTES_TO]->(WorkItem)
+(WorkItem)-[:BELONGS_TO]->(Sprint)
+(WorkItem)-[:DEPENDS_ON]->(WorkItem)
+(WorkItem)-[:BLOCKS]->(Release)
+(Team)-[:PART_OF]->(Engagement)
+(Engagement)-[:SERVES]->(Customer)
+(Engineer)-[:REVIEWS]->(PullRequest)
+(PullRequest)-[:MODIFIES]->(CodeArea)
+(CodeArea)-[:LINKED_TO_DEFECTS]->(Defect)
+(Meeting)-[:MENTIONS]->(Risk)
+(Risk)-[:THREATENS]->(Release)
+(Skill)-[:HELD_BY]->(Engineer)
+(Skill)-[:REQUIRED_FOR]->(WorkItem)
+```
+
+Graph-native questions the relational model can't answer easily:
+
+- *"Which engineers hold skills required by upcoming work items but are currently overloaded?"*
+- *"Show the shortest dependency path from this blocker to the release date."*
+- *"Which code areas modified in the last 30 days correlate with escaped defects across accounts?"*
+- *"If Engineer A leaves, which projects lose critical skill coverage?"*
+
+Queried via **Cypher** on Neo4j (or openCypher on Amazon Neptune).
+
+### 19.4 Event-Sourced Foundation
+
+Every state change is an immutable event in an append-only log.
+
+```json
+{
+  "event_id": "evt_01H8...",
+  "event_type": "WorkItemStatusChanged",
+  "occurred_at": "2026-07-07T09:14:22Z",
+  "source_system": "JIRA",
+  "tenant": "globex",
+  "aggregate_id": "GLBX-4821",
+  "payload": {
+    "from_status": "In Progress",
+    "to_status": "Done",
+    "actor": "eng_1024"
+  },
+  "causation_id": "evt_01H8...",
+  "correlation_id": "corr_sprint24_globex"
+}
+```
+
+**What this unlocks:**
+
+- **Time-travel** — reconstruct exact state of any project on any past date
+- **Root-cause replay** — "Why did Sprint 22 fail? Replay from day 1 and step through decisions"
+- **Counterfactuals** — "What if we had escalated the Team B dependency on day 3 instead of day 7?"
+- **Audit-perfect governance** — every metric traces back to source events
+
+### 19.5 Multi-Agent Intelligence
+
+Specialized agents collaborate under an orchestrator. Each has a narrow job and a defined toolset.
+
+| Agent | Role | Tools | Example output |
+|---|---|---|---|
+| **Scout** | Continuously scans the twin for anomalies | Graph queries, statistical baselines | "Team Phoenix PR review latency spiked 3× yesterday" |
+| **Historian** | Retrieves precedent from past events | Event log search, similar-project matcher | "In 2025-Q2 a similar pattern preceded a 2-sprint slip" |
+| **Forecaster** | Runs simulations on the twin | Monte Carlo, agent-based sim, ML models | "78% probability Release 4.2 slips by 5–8 days" |
+| **Negotiator** | Explores trade-offs between plans | Constraint solver (OR-Tools), scenario runner | "Descope 2 stories OR add 1 senior engineer — both hit target" |
+| **Coach** | Personalizes advice per persona | Persona profile, prior interactions, RAG | "For a DM in a fixed-bid engagement, recommend descope first" |
+| **Sentinel** | Ethics & guardrails | Policy rules, PII detectors | Blocks any output ranking individuals |
+| **Actuator** | Executes approved actions | JIRA API, Slack API, Git API, calendar | Creates JIRA edits, opens escalation thread |
+| **Orchestrator** | Decomposes intent, dispatches, composes response | LLM planner (ReAct / graph-of-thoughts) | Turns "Are we healthy?" into 6 sub-queries |
+
+**Example multi-agent flow:**
+
+```
+USER (DM): "Should I worry about Globex Release 4.2?"
+
+ORCHESTRATOR decomposes:
+  1. Scout: any active anomalies on Globex?
+  2. Forecaster: what does the twin predict?
+  3. Historian: any precedent?
+  4. Negotiator: what trade-offs are available?
+  5. Coach: frame for a DM persona
+  Sentinel: vet the response
+
+RESPONSE:
+"Yes — 3 signals worth attention:
+ • Scout: PR review latency +180% this week
+ • Forecaster: 78% probability of 5–8 day slip
+ • Historian: identical pattern in Acme 2025-Q4 → 2-sprint slip
+ Two options to close the gap (Negotiator):
+   A) Descope 2 lowest-priority stories → confidence rises to 91%
+   B) Reassign PR reviews from Engineer 1024 → confidence rises to 84%
+ Recommendation: A + partial B. [Simulate A] [Simulate B] [Apply]"
+```
+
+### 19.6 Conversational-First UX
+
+The primary interface is a **Copilot chat panel** embedded in Teams, Slack, VS Code, and a lightweight web app. Screens are **generated on demand** by the agents based on what best answers the current question.
+
+- **Ambient briefings** — 3-sentence daily summary pushed per persona
+- **Ask anything** — natural language, voice or text
+- **What-if canvas** — drag "scenario cards", twin simulates outcomes
+- **Approval inbox** — every agentic action queues here for sign-off (or auto-approves per policy)
+
+### 19.7 Data Mesh Governance
+
+- Each engagement is a **data product owner** publishing a standardized contract (schemas, SLAs, freshness, ownership)
+- Central platform provides the mesh substrate (event bus, graph, agents, discovery catalog)
+- Federated computational governance — global privacy/fairness policies enforced automatically
+- **Discovery catalog** (DataHub or OpenMetadata) so any agent or user can find any delivery data product
+
+### 19.8 Answering the Three Critical Questions (V2 approach)
+
+**Are our teams healthy?** — Coach agent narrative:
+
+> *"Team Phoenix is trending flat. Flow is healthy (cycle time 3.2d, stable). Quality is improving (escape rate down 18% MoM). But wellbeing signals are amber — after-hours activity up 40% for 2 weeks and standup sentiment dipped after Engineer 1024 went on leave. Historian flags this pattern preceded burnout in 2 similar teams. Recommendation: schedule a load-rebalance conversation this week."*
+
+**Are our releases on track?** — Forecaster distribution:
+
+```
+Release 4.2 — Globex
+Committed: Aug 14 | Simulated ship date distribution:
+    Aug 14  |█                    (12%)
+    Aug 15-19 |███████             (28%)
+    Aug 20-22 |█████████           (35%)  ← most likely
+    Aug 23-28 |█████               (18%)
+    Aug 29+  |██                   (7%)
+
+Confidence on-time: 12%
+Top 3 risk drivers:
+  1. Blocker GLBX-4712 (8 days old, no owner)
+  2. Test coverage on module Auth: 61% (target 80%)
+  3. 5 PRs older than 3 days awaiting review
+```
+
+**What action next?** — Negotiator trade-offs:
+
+> *"Three levers move the needle. Simulated impact on ship-date confidence:*
+> - *Descope Auth-Beta (P2 story): 12% → 68%*
+> - *Add 1 senior engineer to Team Phoenix for 5 days: 12% → 54%*
+> - *Push CI improvements from backlog (2-day investment): 12% → 47%*
+>
+> *Combining Descope + CI: 12% → 84%."*
+
+### 19.9 Tech Stack (V2)
+
+| Layer | Choice |
+|---|---|
+| **Event backbone** | Kafka + EventStore (event-sourced) |
+| **Primary store** | Neo4j / Amazon Neptune (graph) + object store for events |
+| **Transforms** | Cypher projections + streaming Flink jobs |
+| **ML** | XGBoost + Agent-Based Simulation (Mesa) + OR-Tools |
+| **AI** | Multi-agent framework (LangGraph / Autogen / CrewAI) |
+| **Frontend** | Chat + generative UI (LLM-authored React components) + infinite canvas (tldraw) |
+| **Governance** | Data mesh (DataHub or OpenMetadata) |
+| **Delivery** | Embedded in Teams / Slack / VS Code |
+
+### 19.10 What V2 Uniquely Enables
+
+1. Time-travel debugging of delivery
+2. Counterfactual simulation
+3. Skill-graph queries ("Who can review this and isn't overloaded?")
+4. Cross-engagement pattern mining
+5. Autonomous action with policy guardrails
+6. Zero-dashboard onboarding — chat with the Copilot
+7. Voice briefings ("Brief me on Globex" → 90-second audio)
+8. Ethics-first architecture — Sentinel is a mandatory gate
+
+### 19.11 MVP Path (V2)
+
+| Wave | Duration | Scope |
+|---|---|---|
+| **W0** | 4 wks | Event ingestion from JIRA + Git for 1 pilot engagement into Neo4j |
+| **W1** | 6 wks | Deploy Scout + Historian + Coach agents behind a Teams chatbot. Read-only |
+| **W2** | 6 wks | Add Forecaster with Monte Carlo on the twin. Introduce What-if canvas |
+| **W3** | 8 wks | Add Negotiator + Actuator with policy engine and human-in-the-loop |
+| **W4** | ongoing | Onboard more engagements as data products. Voice UI. Expand agents |
+
+### 19.12 Risks & Mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Agent hallucination | All outputs grounded in graph queries + event log; every claim carries citations |
+| Graph query complexity for users | Only Orchestrator writes Cypher; users speak natural language |
+| Higher infra cost than V1 | Start with scoped MVP; prove ROI before scaling |
+| Change management — losing dashboards | Ship "Canvas" mode that generates classic views on demand |
+| Regulatory needs static reports | Event-sourcing makes audit exports trivial and reproducible |
+
+---
+
+## 20. Solution V3 — FlowOps: Delivery-as-Code + Reactive Nervous System + Prediction Markets
+
+A third paradigm borrowing from **control theory, GitOps, and market mechanisms** — treating delivery as a self-regulating flow system that humans steer via version-controlled policy, not clicks.
+
+### 20.1 One-Line Thesis
+
+> **Delivery is a flow system. Codify its rules in Git, let a reactive nervous system enforce them in real time, and let prediction markets — not dashboards — tell you if releases are on track.**
+
+### 20.2 Why V3 Is Different
+
+| Dimension | V1 | V2 | **V3 (FlowOps)** |
+|---|---|---|---|
+| **Governing metaphor** | Cockpit | Simulated organism | **Fluid system + market economy** |
+| **Where truth lives** | Database | Graph | **Git (policy) + market (forecast)** |
+| **Control loop** | Read dashboard → apply playbook | Agent proposes → human approves | **Autonomous reflex within Git envelope; humans on edge cases** |
+| **Forecasting** | ML models | Monte Carlo on twin | **Prediction market + ML — humans and models bet together** |
+| **Change management** | Config UI | Chat with agent | **Pull Request on `delivery-policy` repo** |
+| **Failure recovery** | Fix dashboard config | Retrain agent | **`git revert`** |
+| **Governance** | Central IT + RBAC | Data mesh | **GitOps + audit-perfect history** |
+| **Cultural shift** | "Look at the numbers" | "Ask the copilot" | **"Ship the policy, not the report"** |
+
+### 20.3 Core Concept 1 — Delivery Contracts as Code
+
+Every engagement declares its delivery rules in a versioned YAML file — the single source of executable truth.
+
+**File:** `engagements/globex/delivery-contract.yaml`
+
+```yaml
+apiVersion: flowops/v1
+kind: DeliveryContract
+metadata:
+  engagement: globex-modernization
+  account: globex
+  owners:
+    dm: e.wilson
+    em: r.patel
+    cp: s.kim
+
+flow:
+  wip_limits:
+    in_progress_per_engineer: 3
+    review_per_engineer: 2
+    total_open_prs: 25
+  cycle_time_targets:
+    story_p50_days: 4
+    story_p90_days: 8
+    bug_p50_hours: 24
+  throughput:
+    min_stories_per_week: 12
+    variance_tolerance_pct: 25
+
+quality:
+  escape_defect_rate_max: 0.05
+  test_coverage_min: 0.75
+  change_failure_rate_max: 0.15
+
+wellbeing:
+  after_hours_activity_max_pct: 20
+  on_call_rotation_min_days_off: 5
+  standup_sentiment_floor: 0.4
+
+release:
+  target_ship_date: 2026-08-14
+  confidence_threshold_for_alert: 0.70
+  auto_descope_below_confidence: 0.40
+  descope_priority_ceiling: P3
+
+reflexes:
+  - name: rebalance-pr-review
+    trigger: pr_review_queue_depth > 5 for 2h
+    action: reassign_reviewer_from_pool
+    approver_pool: [tech_leads]
+    max_per_day: 10
+    reversible: true
+
+  - name: extend-wip-emergency
+    trigger: incident_severity == "P1"
+    action: raise wip_limit by 50% for 24h
+    max_per_month: 2
+    reversible: true
+
+  - name: block-new-scope
+    trigger: sprint_confidence < 0.30 at day 5
+    action: label_new_stories 'needs-triage'
+    approver: dm
+    reversible: true
+
+escalation:
+  policy:
+    - if: release_confidence < 0.50 for 48h
+      notify: [dm, em]
+    - if: release_confidence < 0.30 for 24h
+      notify: [dm, em, cp, bu_lead]
+      require_response_within: 4h
+
+markets:
+  release_prediction:
+    enabled: true
+    participants: [core_team, adjacent_teams, sre]
+    resolution: on_actual_ship_date
+    reward: reputation_tokens
+
+secrets_and_privacy:
+  edge_agent: required
+  raw_ticket_text_egress: false
+  individual_metrics_visibility: self_and_manager_only
+```
+
+**Consequences:**
+
+- Any change is a **Pull Request** — visible, reviewable, auditable
+- Policy diffs across engagements are trivially comparable
+- Rollback is `git revert` — no mystery about "who changed the SLA on Tuesday"
+- Templates + inheritance — accounts extend an org-wide baseline
+- Compliance & audits — full history is in Git, cryptographically signed
+
+### 20.4 Core Concept 2 — Reactive Nervous System
+
+Treat signals as a stream processed by a three-tier reactive control system modeled on biological reflex arcs:
+
+```mermaid
+flowchart LR
+    subgraph Signals["Continuous Signals (Kafka)"]
+        S[JIRA / ADO / Git / CI / Tests / Comms]
+    end
+
+    subgraph Reflex["Tier 1 — Spinal Reflexes (Flink)"]
+        R1[WIP over limit → warn]
+        R2[PR queue deep → reassign]
+        R3[Blocker aged > 48h → notify owner]
+    end
+
+    subgraph Autonomic["Tier 2 — Autonomic (bounded autonomy)"]
+        A1[Rebalance reviewers]
+        A2[Auto-descope P3 stories]
+        A3[Raise WIP in incident]
+    end
+
+    subgraph Cerebral["Tier 3 — Cerebral (human decision)"]
+        C1[Release descope decisions]
+        C2[Staffing changes]
+        C3[Escalation to customer]
+    end
+
+    S --> Reflex
+    Reflex --> Autonomic
+    Autonomic --> Cerebral
+    Reflex -->|instant nudge| S
+    Autonomic -->|bounded action| S
+    Cerebral -->|policy PR| Git[(Git: delivery-contract.yaml)]
+    Git -->|declarative reload| Reflex
+    Git --> Autonomic
+```
+
+- **Tier 1 — Spinal reflexes.** Simple stream rules. Latency: seconds.
+- **Tier 2 — Autonomic actions.** Bounded, reversible, rate-limited, audited. Latency: minutes.
+- **Tier 3 — Cerebral decisions.** Outside the envelope → requires human, typically via PR to the contract. Latency: hours.
+
+Most "delivery firefighting" today is repetitive mechanical work (chase blocker, reassign reviewer, remind about WIP). Tiers 1–2 handle it automatically, freeing humans for the small percentage that needs judgement.
+
+### 20.5 Core Concept 3 — Prediction Markets for Release Health
+
+Aggregated predictions from many participants beat any individual predictor (Tetlock, Surowiecki).
+
+- Every team member (and adjacent teams: SRE, QE, dependents) gets non-transferable **reputation tokens** weekly
+- They stake tokens on outcome buckets: *on-time, slips ≤ 3 days, slips 4–7 days, slips > 7 days*
+- Market's implied probability becomes a **primary input** to release readiness — alongside ML and Monte Carlo
+- On resolution (actual ship date), winners gain reputation; losers lose it. Reputation-weighted votes carry more signal over time
+
+**Why this is a game-changer:**
+
+| Traditional forecast | Prediction market forecast |
+|---|---|
+| Reflects loudest voice or optimistic PM | Reflects distributed private knowledge |
+| Political pressure to say "we're green" | Anonymous stakes surface honest concerns |
+| Model unaware of tester noticing regressions | Tester bets on "slip" and market moves |
+| Late signals | Market moves within hours of new information |
+
+**Ensemble forecast:**
+
+```
+Release Readiness = 0.4 × market_implied_probability
+                  + 0.3 × ml_forecaster_probability
+                  + 0.3 × monte_carlo_simulation_probability
+```
+
+When all three agree → high confidence. When they disagree → **that itself is the signal** — trigger investigation.
+
+### 20.6 Core Concept 4 — Delivery Chaos Engineering
+
+Borrow from SRE: inject small, contained, opt-in perturbations to test process resilience.
+
+- **Reviewer chaos** — delay a low-priority PR review; observe if rebalance reflex fires
+- **Blocker chaos** — inject a synthetic blocker; verify escalation SLAs fire
+- **Meeting chaos** — cancel a standup; observe how information flow degrades
+- **Load chaos** — simulate an engineer being unavailable; observe capacity redistribution
+
+Results feed a per-engagement **resilience score**. Genuinely novel in the delivery-management space.
+
+### 20.7 Answering the Three Critical Questions (V3 mechanism)
+
+**Are our teams healthy?** — live pressure/flow diagram from Little's Law:
+
+```
+Throughput  = WIP  /  Cycle Time
+Team Phoenix — this week
+──────────────────────────────────────
+WIP        ▓▓▓▓▓▓▓▓░░░░  18 items (limit 25)
+Cycle P50  ▓▓▓▓░░░░░░░░  3.2 d (target ≤ 4)
+Cycle P90  ▓▓▓▓▓▓▓▓▓▓░░  9.8 d (target ≤ 8) ⚠
+Throughput ▓▓▓▓▓▓▓▓░░░░  14 stories/wk (target 12)
+
+Wellbeing:
+After-hours ▓▓▓▓▓░░░░░░░  22% (ceiling 20) ⚠
+Sentiment   ▓▓▓▓▓▓▓░░░░░  0.58 (floor 0.40) ✓
+
+Reflex arcs fired this week: 4 (all resolved autonomously)
+Cerebral escalations: 0
+Chaos resilience score: 87/100
+```
+
+The physics is the answer.
+
+**Are our releases on track?** — prediction market panel:
+
+```
+Release 4.2 — Globex — Target Aug 14
+──────────────────────────────────────
+Market says:
+  On-time         ██░░░░░░░░  17%
+  Slip ≤ 3 days   ████░░░░░░  32%   ← peak
+  Slip 4–7 days   █████░░░░░  28%
+  Slip > 7 days   ████░░░░░░  23%
+
+ML model:        22% on-time (agrees roughly)
+Monte Carlo:     19% on-time (agrees)
+CONSENSUS: on-time confidence ≈ 19%. Contract threshold is 70%.
+
+Top movers in market (last 24h):
+  ▼ 3 tokens moved to "Slip 4–7" after test-suite flakiness spike
+  ▲ 2 tokens moved to "On-time" after blocker GLBX-4712 closed
+
+Autonomous action available (per contract):
+  auto_descope_below_confidence: 0.40 → ELIGIBLE
+  Descope candidates (P3): AUTH-BETA, REPORT-EXP, CACHE-REFAC
+  [Approve auto-descope] [Open policy PR to adjust threshold]
+```
+
+**What should we do next?** — policy proposal PR:
+
+```
+BRANCH: proposal/globex-rel4.2-descope
+CHANGES:
+  engagements/globex/delivery-contract.yaml
+  release.scope.exclude += [AUTH-BETA, REPORT-EXP]
+  release.confidence_threshold_for_alert: 0.70 → 0.60
+
+  auto-generated by: reflex-recommender
+  simulated impact:
+    release_confidence: 0.19 → 0.78 (+0.59)
+    scope_reduction: -18% story points
+    customer_communication_required: yes
+
+  linked evidence: 12 observations from last 5 sprints
+  linked precedent: engagements/acme/PR-2199 (similar situation, worked)
+
+  reviewers: [e.wilson (dm), r.patel (em)]
+  auto-merge if approved by: 2 of 2
+
+[View diff] [Simulate] [Open PR] [Reject]
+```
+
+Approving the PR **is** the action. The nervous system re-reads the new contract and adjusts behavior.
+
+### 20.8 Architecture (V3)
+
+```mermaid
+flowchart TB
+    subgraph Sources["Sources"]
+        JIRA & ADO & Git & CI[CI/CD] & Test & Comms
+    end
+
+    subgraph Streaming["Stream Processing (Kafka + Flink)"]
+        Ingest[Ingestion & normalization]
+        Reflex[Reflex arc engine]
+    end
+
+    subgraph Policy["Policy Plane"]
+        GitRepo[(Git: delivery-policies)]
+        PolicyLoader[Policy hot-reloader]
+        PRBot[Policy PR bot + simulator]
+    end
+
+    subgraph Market["Prediction Market"]
+        MarketEngine[Market maker]
+        Reputation[Reputation ledger]
+    end
+
+    subgraph Forecast["Ensemble Forecaster"]
+        ML[ML model]
+        MC[Monte Carlo]
+        Ensemble[Ensemble aggregator]
+    end
+
+    subgraph Chaos["Chaos Runner"]
+        ChaosLib[Perturbation library]
+        Resilience[Resilience scorer]
+    end
+
+    subgraph UX["Interfaces"]
+        FlowUI[Flow / Pressure UI]
+        MarketUI[Market panel]
+        PRUI[Policy PR review]
+        Bots[Slack/Teams reflex nudges]
+    end
+
+    Sources --> Streaming
+    GitRepo --> PolicyLoader --> Reflex
+    Streaming --> Forecast
+    Streaming --> MarketEngine
+    MarketEngine --> Ensemble
+    ML --> Ensemble
+    MC --> Ensemble
+    Ensemble --> UX
+    Reflex -->|bounded actions| Sources
+    Reflex --> Bots
+    PRBot --> GitRepo
+    ChaosLib --> Sources
+    ChaosLib --> Resilience --> UX
+```
+
+### 20.9 Tech Stack (V3)
+
+| Layer | Choice | Rationale |
+|---|---|---|
+| **Policy plane** | Git (GitHub/GitLab) + OPA + Cue for schema validation | Every rule versioned, PR-reviewable, machine-enforced |
+| **Streaming** | Kafka + Apache Flink (not batch dbt) | Real-time reflex arcs need sub-second latency |
+| **Serving** | ClickHouse + Postgres for policy state | ClickHouse is best for streaming aggregates |
+| **Market engine** | Custom LMSR (Logarithmic Market Scoring Rule) market maker | Standard prediction-market math |
+| **Reputation ledger** | Append-only Postgres (or internal blockchain if audit strict) | Tamper-evident |
+| **Forecasting** | XGBoost + Monte Carlo + market ensemble | Ensemble beats any single method |
+| **Chaos runner** | Custom scheduler + engagement opt-in registry | Novel, low-tech |
+| **UX** | Flow diagrams, market panels, PR review — deliberately minimal | Interface matches paradigm |
+| **Bots** | Slack/Teams reflex nudges + PR notifications | Meet users in their tools |
+| **AuthZ** | OPA policies (same engine as delivery contracts) | Same-substance governance |
+
+### 20.10 What V3 Uniquely Enables
+
+1. **Auditable delivery governance** — every rule change is a signed Git commit
+2. **Human-out-of-the-loop reliability** — 80% of repetitive firefighting becomes autonomous
+3. **Distributed truth via markets** — surfaces private concerns the org would otherwise never hear
+4. **Chaos-proven resilience** — reflexes are tested, not assumed
+5. **Policy portability** — the YAML for a well-run engagement is a reusable artifact
+6. **No dashboard fatigue** — flow diagram + market + PR inbox is deliberately minimal
+7. **Cultural default shift** — "propose a policy change" replaces "escalate in a meeting"
+8. **Ensemble forecasting** — humans, ML, and simulation vote; disagreement is a first-class signal
+
+### 20.11 Trade-offs (V3)
+
+| Weakness | Mitigation |
+|---|---|
+| Cultural readiness required | Start with tech-forward pilot engagements |
+| Policy PR overhead | Fast-track PRs; auto-merge reversible changes |
+| Market cold-start problem | Bootstrap with adjacent-team participation + ML seed prices |
+| YAML fatigue | Provide a form-based UI that generates the PR |
+| Chaos engineering is scary | Opt-in, small perturbations, clear kill switch |
+| Executives may still want a dashboard | Ship a read-only "classic" dashboard as compatibility layer |
+
+### 20.12 MVP Path (V3)
+
+| Wave | Duration | Scope |
+|---|---|---|
+| **W0 — Streaming foundation** | 4 wks | JIRA + Git → Kafka + Flink. Normalized event stream |
+| **W1 — Contracts as Code** | 4 wks | Schema (Cue) + Git repo + policy hot-reloader. First 3 reflex arcs |
+| **W2 — Reflex + PR bot** | 6 wks | Autonomic tier: reviewer rebalance + auto-descope. PR bot with simulation |
+| **W3 — Prediction market** | 6 wks | LMSR market maker + reputation ledger + release panel UI. 3 pilot engagements |
+| **W4 — Ensemble forecaster** | 4 wks | ML + Monte Carlo + market → ensemble score with disagreement alerts |
+| **W5 — Chaos + resilience** | 4 wks | Opt-in chaos library, resilience scorer, per-engagement report |
+| **W6+** | ongoing | Scale to portfolio, publish policy templates, executive read-only dashboard |
+
+---
+
+## 21. Comparison & Recommendation
+
+### 21.1 Side-by-Side
+
+| Aspect | V1 Command Center | V2 Digital Twin + Agents | V3 FlowOps |
+|---|---|---|---|
+| Metaphor | Cockpit | Simulated organism | Fluid system + market |
+| Truth lives in | DB | Graph | **Git + market prices** |
+| Primary UX | Persona dashboards | Chat + generative UI | Flow diagram + market + PR inbox |
+| Forecast source | ML | Simulation | Ensemble incl. crowd wisdom |
+| Action model | Human picks playbook | Agent proposes, human approves | Autonomous within policy envelope; policy is PR-gated |
+| Governance | Central platform | Data mesh | GitOps |
+| Novelty risk | Low | High | Medium |
+| Auditability | Good | Good | Best-in-class |
+| Executive familiarity | High | Low | Low (needs compat dashboard) |
+| Cost | Medium | Highest | Lowest |
+| Time to first value | Fastest | Medium | Medium |
+| Ceiling on capability | Moderate | Very high | High |
+
+### 21.2 When to Pick Which
+
+**Pick V1 (Command Center + Playbooks)** if:
+- Executives want familiar dashboard-style visualization
+- Ops maturity is early — teams want structured playbooks
+- Budget favors a proven pattern with lower novelty risk
+
+**Pick V2 (DeliveryOS Digital Twin)** if:
+- Relevantz wants a differentiated market story ("AI-native delivery org")
+- Comfortable with conversational AI as primary UX
+- Graph-shaped questions (skills, dependencies, precedent) are strategic
+- Simulation and what-if analysis are top asks from leadership
+
+**Pick V3 (FlowOps)** if:
+- Auditability and reversibility are paramount (regulated customers)
+- Delivery culture is engineering-mature and comfortable with Git as source of truth
+- Leadership will redistribute forecasting from a few voices to many via markets
+- Goal is to **industrialize reliability**, not showcase AI
+- Cost sensitivity is high — meaningfully cheaper than heavy AI-agent stack
+
+### 21.3 Recommended Path
+
+A **hybrid rollout** captures the best of all three:
+
+1. **Start with V1 MVP (weeks 1–8)** — deliver visible value fast; establish ingestion, data model, first health scores, DM/EM workspace
+2. **Layer V3 concepts (months 3–6)** — introduce Delivery Contracts as Code and Tier 1 reflex arcs on top of the V1 data foundation; add prediction markets for one pilot release
+3. **Introduce V2 selectively (months 6–12)** — add the multi-agent Copilot as an interface layer over the same data; use knowledge graph for skill/dependency queries that V1's relational model can't serve
+
+This staging:
+- Delivers early wins (V1) → builds confidence
+- Adds governance rigor (V3) → wins regulated customers
+- Adds differentiated intelligence (V2) → creates the marketable story
+
+All three paradigms share the **same ingestion foundation and canonical data model** — the additions are layered on top rather than replacements.
 
 ---
 
