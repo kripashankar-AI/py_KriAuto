@@ -1,0 +1,52 @@
+flowchart TB
+    subgraph Sources["Sources"]
+        JIRA & ADO & Git & CI[CI/CD] & Test & Comms
+    end
+
+    subgraph Streaming["Stream Processing (Kafka + Flink)"]
+        Ingest[Ingestion & normalization]
+        Reflex[Reflex arc engine]
+    end
+
+    subgraph Policy["Policy Plane"]
+        GitRepo[(Git: delivery-policies)]
+        PolicyLoader[Policy hot-reloader]
+        PRBot[Policy PR bot + simulator]
+    end
+
+    subgraph Market["Prediction Market"]
+        MarketEngine[Market maker]
+        Reputation[Reputation ledger]
+    end
+
+    subgraph Forecast["Ensemble Forecaster"]
+        ML[ML model]
+        MC[Monte Carlo]
+        Ensemble[Ensemble aggregator]
+    end
+
+    subgraph Chaos["Chaos Runner"]
+        ChaosLib[Perturbation library]
+        Resilience[Resilience scorer]
+    end
+
+    subgraph UX["Interfaces"]
+        FlowUI[Flow / Pressure UI]
+        MarketUI[Market panel]
+        PRUI[Policy PR review]
+        Bots[Slack/Teams reflex nudges]
+    end
+
+    Sources --> Streaming
+    GitRepo --> PolicyLoader --> Reflex
+    Streaming --> Forecast
+    Streaming --> MarketEngine
+    MarketEngine --> Ensemble
+    ML --> Ensemble
+    MC --> Ensemble
+    Ensemble --> UX
+    Reflex -->|bounded actions| Sources
+    Reflex --> Bots
+    PRBot --> GitRepo
+    ChaosLib --> Sources
+    ChaosLib --> Resilience --> UX

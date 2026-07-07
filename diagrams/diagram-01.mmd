@@ -1,0 +1,41 @@
+flowchart LR
+    subgraph Sources
+        S1[JIRA]
+        S2[Azure DevOps]
+        S3[Git / GitHub / GitLab]
+        S4[CI/CD - Jenkins/GH Actions]
+        S5[Test Mgmt - Zephyr/TestRail]
+        S6[Comms - Teams/Slack]
+        S7[Delivery Scorecards]
+        S8[Customer Systems]
+    end
+
+    subgraph Ingestion["Ingestion Layer"]
+        C1[Pull Connectors]
+        C2[Webhooks]
+        C3[Edge Agent - Customer Env]
+    end
+
+    subgraph Core["Core Platform"]
+        DM[Unified Delivery Data Model]
+        ME[Metrics Engine]
+        ML[ML / Predictive Layer]
+        LLM[LLM Semantic Layer]
+    end
+
+    subgraph Experience["Experience Layer"]
+        IR[Intent Router]
+        WS[Persona Workspaces]
+        AE[Action Engine + Playbooks]
+    end
+
+    Sources --> Ingestion
+    Ingestion --> DM
+    DM --> ME
+    DM --> ML
+    ME --> IR
+    ML --> IR
+    LLM --> IR
+    IR --> WS
+    WS --> AE
+    AE -->|writes back| Sources

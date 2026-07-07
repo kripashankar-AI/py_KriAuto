@@ -1,0 +1,43 @@
+flowchart TB
+    subgraph Reality["Reality (Source Systems)"]
+        R1[JIRA/ADO Events]
+        R2[Git/PR Events]
+        R3[CI/CD Events]
+        R4[Comms Events]
+    end
+
+    subgraph EventBus["Event Sourcing Bus (Kafka + EventStore)"]
+        E[Immutable Event Log]
+    end
+
+    subgraph Twin["Delivery Digital Twin"]
+        KG[(Knowledge Graph<br/>Neo4j)]
+        SM[State Materializer]
+        SIM[Simulation Engine<br/>Monte Carlo + Agent-Based]
+    end
+
+    subgraph Agents["Multi-Agent Layer"]
+        A1[Scout Agent<br/>Anomaly hunt]
+        A2[Historian Agent<br/>Pattern recall]
+        A3[Forecaster Agent<br/>What-if]
+        A4[Negotiator Agent<br/>Trade-off]
+        A5[Coach Agent<br/>Persona guide]
+        ORC[Orchestrator]
+    end
+
+    subgraph UX["Human Interfaces"]
+        CHAT[Copilot Chat]
+        VOICE[Voice Briefing]
+        AMBIENT[Ambient Notifications<br/>Teams/Slack/Email]
+        CANVAS[On-demand Canvas<br/>generated views]
+    end
+
+    Reality --> EventBus
+    EventBus --> SM
+    SM --> KG
+    KG --> SIM
+    KG --> Agents
+    SIM --> Agents
+    ORC <--> A1 & A2 & A3 & A4 & A5
+    Agents --> UX
+    UX -->|approved actions| Reality

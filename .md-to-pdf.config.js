@@ -28,6 +28,8 @@ module.exports = {
     ul, ol { margin: 6px 0 10px 22px; }
     li { margin: 2px 0; }
     img { max-width: 100%; }
+    .mermaid-diagram { text-align: center; margin: 14px 0; page-break-inside: avoid; }
+    .mermaid-diagram img { max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; background: #ffffff; }
     .page-break { page-break-after: always; }
   `
 };

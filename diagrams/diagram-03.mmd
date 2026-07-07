@@ -1,0 +1,31 @@
+flowchart LR
+    subgraph Signals["Continuous Signals (Kafka)"]
+        S[JIRA / ADO / Git / CI / Tests / Comms]
+    end
+
+    subgraph Reflex["Tier 1 — Spinal Reflexes (Flink)"]
+        R1[WIP over limit → warn]
+        R2[PR queue deep → reassign]
+        R3[Blocker aged > 48h → notify owner]
+    end
+
+    subgraph Autonomic["Tier 2 — Autonomic (bounded autonomy)"]
+        A1[Rebalance reviewers]
+        A2[Auto-descope P3 stories]
+        A3[Raise WIP in incident]
+    end
+
+    subgraph Cerebral["Tier 3 — Cerebral (human decision)"]
+        C1[Release descope decisions]
+        C2[Staffing changes]
+        C3[Escalation to customer]
+    end
+
+    S --> Reflex
+    Reflex --> Autonomic
+    Autonomic --> Cerebral
+    Reflex -->|instant nudge| S
+    Autonomic -->|bounded action| S
+    Cerebral -->|policy PR| Git[(Git: delivery-contract.yaml)]
+    Git -->|declarative reload| Reflex
+    Git --> Autonomic
