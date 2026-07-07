@@ -1,0 +1,3 @@
+# Intermediate build artifacts from the mermaid preprocessor + md-to-pdf pipeline
+*.rendered.md
+*.rendered.pdf
